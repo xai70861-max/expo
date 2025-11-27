@@ -1,4 +1,61 @@
----
+def calculate_retirement_plan(
+    current_age,          # 目前年齡
+    retire_age,           # 預計退休年齡
+    death_age,            # 預計壽命 (通常設 85-90)
+    current_savings,      # 目前已備存款
+    monthly_saving,       # 目前每月存多少
+    target_monthly_expense_today, # 退休後想花多少 (以現在幣值算)
+    expected_return_rate, # 預期年化報酬率 (例如 0.06)
+    inflation_rate        # 預期通膨率 (例如 0.02)
+):
+    
+    years_to_accumulate = retire_age - current_age
+    years_in_retirement = death_age - retire_age
+    
+    # 1. 計算退休時，每個月實際需要多少錢 (考慮通膨)
+    # 今天的 5萬元，30年後需要更多錢才能買到一樣的東西
+    future_monthly_expense = target_monthly_expense_today * ((1 + inflation_rate) ** years_to_accumulate)
+    
+    # 2. 計算退休那一天，總共需要多少本金 (退休金總額)
+    # 使用年金現值公式 (考慮退休後的錢也會繼續投資，但通常轉保守，假設報酬率 = 通膨率，則可簡化)
+    # 為了簡化，這裡用簡單的總和 (進階版可用更複雜的年金公式)
+    total_needed = future_monthly_expense * 12 * years_in_retirement
+    
+    # 3. 計算目前的資產與儲蓄，到退休時會變成多少錢 (複利終值)
+    # A. 現有存款的複利
+    future_value_savings = current_savings * ((1 + expected_return_rate) ** years_to_accumulate)
+    
+    # B. 未來每月存錢的複利 (年金終值公式)
+    # 月利率
+    monthly_rate = expected_return_rate / 12
+    months = years_to_accumulate * 12
+    future_value_monthly_contribution = monthly_saving * (((1 + monthly_rate) ** months - 1) / monthly_rate)
+    
+    total_assets_at_retire = future_value_savings + future_value_monthly_contribution
+    
+    # 4. 結果分析
+    gap = total_needed - total_assets_at_retire
+    
+    return {
+        "退休時需要的總金額": round(total_needed),
+        "預計屆時累積金額": round(total_assets_at_retire),
+        "資金缺口": round(gap),
+        "狀態": "成功" if gap <= 0 else "不足"
+    }
+
+# --- 測試數據 ---
+result = calculate_retirement_plan(
+    current_age=30,
+    retire_age=65,
+    death_age=90,
+    current_savings=500000,    # 已有50萬
+    monthly_saving=10000,      # 每月存1萬
+    target_monthly_expense_today=50000, # 退休想月花5萬
+    expected_return_rate=0.06, # 6% 報酬
+    inflation_rate=0.02        # 2% 通膨
+)
+
+print(f"退休準備狀態: {result}")---
 title: Tools for development
 description: An overview of Expo tools and websites that will help you during various aspects of your project-building journey.
 ---
